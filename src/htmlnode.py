@@ -11,6 +11,7 @@ class HtmlNode:
     def props_to_html(self):
         if self.props is not None:
             return " ".join([f"{key}={value}" for key, value in self.props.items()])
+        return ""
 
     def __repr__(self):
         return f"HtmlNode(tag={self.tag}, value={self.value}, children={self.children}, props={self.props})"
