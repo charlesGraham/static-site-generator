@@ -27,3 +27,13 @@ def text_node_to_html_node(text_node):
         return Leaf(
             tag="img", value="", props={"src": text_node.url, "alt": text_node.text}
         )
+
+
+def split_nodes_delimiter(old_nodes, delimiter, text_type):
+    new_nodes = []
+    for node in old_nodes:
+        if isinstance(node, TextNode) and node.text_type == text_type:
+            new_nodes.extend(node.split(delimiter))
+        else:
+            new_nodes.append(node)
+    return new_nodes
