@@ -1,4 +1,5 @@
 from htmlnode import HtmlNode
+from textnode import TextNode, TextType
 
 
 class Leaf(HtmlNode):

@@ -1,6 +1,7 @@
 import unittest
 
 from leaf import Leaf
+from textnode import TextNode, TextType
 
 
 class TestLeaf(unittest.TestCase):
