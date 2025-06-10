@@ -12,6 +12,7 @@ from utils import (
     BlockType,
     block_to_block_type,
     markdown_to_html_node,
+    extract_title,
 )
 from parentnode import ParentNode
 from leaf import Leaf
@@ -156,3 +157,10 @@ code here
             node.to_html(),
             "<div><h1>Heading</h1><p>This is a paragraph.</p><ul><li>item 1</li><li>item 2</li></ul><pre>code here</pre><blockquote>quoted text</blockquote></div>",
         )
+
+    def test_extract_title(self):
+        self.assertEqual(extract_title("# Hello"), "Hello")
+        self.assertEqual(extract_title("#   Hello World  "), "Hello World")
+        self.assertEqual(extract_title("Some text\n# Title\nMore text"), "Title")
+        with self.assertRaises(Exception):
+            extract_title("No title here\n## Subtitle")
