@@ -125,3 +125,8 @@ def text_to_textnodes(text):
         if trailing_text:
             nodes.append(TextNode(trailing_text, TextType.NORMAL_TEXT))
     return nodes
+
+
+def markdown_to_blocks(markdown):
+    blocks = [block.strip() for block in markdown.split("\n\n")]
+    return [block for block in blocks if block]

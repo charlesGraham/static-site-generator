@@ -8,6 +8,7 @@ from utils import (
     split_nodes_link,
     text_node_to_html_node,
     text_to_textnodes,
+    markdown_to_blocks,
 )
 
 
@@ -69,5 +70,28 @@ class TestUtils(unittest.TestCase):
                 TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
                 TextNode("and a link", TextType.NORMAL_TEXT),
                 TextNode("link", TextType.LINK, "https://www.google.com"),
+            ],
+        )
+
+    def test_markdown_to_blocks(self):
+        md = """# This is a heading\n\nThis is a paragraph of text. It has some **bold** and _italic_ words inside of it.\n\n- This is the first list item in a list block\n- This is a list item\n- This is another list item\n\n"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "# This is a heading",
+                "This is a paragraph of text. It has some **bold** and _italic_ words inside of it.",
+                "- This is the first list item in a list block\n- This is a list item\n- This is another list item",
+            ],
+        )
+
+        md2 = """\n\n# Heading\n\n\nParagraph\n\n\n\n- List item\n\n"""
+        blocks2 = markdown_to_blocks(md2)
+        self.assertEqual(
+            blocks2,
+            [
+                "# Heading",
+                "Paragraph",
+                "- List item",
             ],
         )
