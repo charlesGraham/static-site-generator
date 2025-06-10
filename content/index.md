@@ -1,14 +1,16 @@
-# Welcome to My Static Site
+# Tolkien Fan Club
 
-This is the main page of the site. Here is some sample content:
+Welcome to the Tolkien Fan Club! Here are some reasons why we love Tolkien:
 
-- This is a list item
-- Another item
+- Gandalf
+- It can be enjoyed by children and adults alike
 
-## A Subheading
+<b>I like Tolkien</b> and <i>didn't ruin it</i>.
 
-Here is a paragraph with some **bold** and _italic_ text.
+Check out the <a href="https://tolkien.co.uk">official Tolkien site</a>.
 
-```python
-print("Hello, world!")
 ```
+print("Middle-earth is awesome!")
+```
+
+> "I am in fact a Hobbit in all but size."

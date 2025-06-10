@@ -33,6 +33,7 @@ def generate_page(from_path, template_path, dest_path):
     with open(template_path, "r", encoding="utf-8") as f:
         template = f.read()
     html_content = markdown_to_html_node(markdown).to_html()
+    print(html_content)
     title = extract_title(markdown)
     result = template.replace("{{ Title }}", title).replace(
         "{{ Content }}", html_content

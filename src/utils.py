@@ -175,23 +175,49 @@ def markdown_to_html_node(markdown):
         block_type = block_to_block_type(block)
         if block_type == BlockType.HEADING:
             level = len(block.split(" ")[0])
-            text = block[level + 1 :] if block[level] == " " else block[level:]
-            tag = f"h{level}"
-            children.append(Leaf(tag, block[level + 1 :].strip()))
+            heading_text = block[level + 1 :] if block[level] == " " else block[level:]
+            heading_children = text_to_children(heading_text.strip())
+            if (
+                len(heading_children) == 1
+                and isinstance(heading_children[0], Leaf)
+                and heading_children[0].tag is None
+            ):
+                children.append(Leaf(f"h{level}", heading_children[0].value))
+            else:
+                children.append(ParentNode(f"h{level}", heading_children))
         elif block_type == BlockType.CODE:
             code_content = "\n".join(block.split("\n")[1:-1])
-            code_node = text_node_to_html_node(
-                TextNode(code_content, TextType.CODE_TEXT)
-            )
-            children.append(Leaf("pre", code_node.value))
+            code_leaf = Leaf("code", code_content)
+            children.append(ParentNode("pre", [code_leaf]))
         elif block_type == BlockType.QUOTE:
             quote_lines = [line.lstrip("> ").rstrip() for line in block.split("\n")]
             quote_text = " ".join(quote_lines)
             quote_children = text_to_children(quote_text)
-            children.append(ParentNode("blockquote", quote_children))
+            if (
+                len(quote_children) == 1
+                and isinstance(quote_children[0], Leaf)
+                and quote_children[0].tag is None
+            ):
+                children.append(Leaf("blockquote", quote_children[0].value))
+            else:
+                children.append(ParentNode("blockquote", quote_children))
         elif block_type == BlockType.UNORDERED_LIST:
-            items = [line[2:].strip() for line in block.split("\n") if line.strip()]
-            li_nodes = [ParentNode("li", text_to_children(item)) for item in items]
+            items = [
+                line[2:].strip()
+                for line in block.split("\n")
+                if line.strip().startswith("- ")
+            ]
+            li_nodes = []
+            for item in items:
+                item_children = text_to_children(item)
+                if (
+                    len(item_children) == 1
+                    and isinstance(item_children[0], Leaf)
+                    and item_children[0].tag is None
+                ):
+                    li_nodes.append(Leaf("li", item_children[0].value))
+                else:
+                    li_nodes.append(ParentNode("li", item_children))
             children.append(ParentNode("ul", li_nodes))
         elif block_type == BlockType.ORDERED_LIST:
             items = [
@@ -199,7 +225,17 @@ def markdown_to_html_node(markdown):
                 for line in block.split("\n")
                 if line.strip()
             ]
-            li_nodes = [ParentNode("li", text_to_children(item)) for item in items]
+            li_nodes = []
+            for item in items:
+                children = text_to_children(item)
+                if (
+                    len(children) == 1
+                    and isinstance(children[0], Leaf)
+                    and children[0].tag is None
+                ):
+                    li_nodes.append(Leaf("li", children[0].value))
+                else:
+                    li_nodes.append(ParentNode("li", children))
             children.append(ParentNode("ol", li_nodes))
         else:
             para_children = text_to_children(block)
