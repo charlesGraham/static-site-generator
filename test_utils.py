@@ -1,7 +1,14 @@
 import unittest
 
 from textnode import TextNode, TextType
-from utils import extract_markdown_images, split_nodes_delimiter, text_node_to_html_node
+from utils import (
+    extract_markdown_images,
+    split_nodes_delimiter,
+    split_nodes_image,
+    split_nodes_link,
+    text_node_to_html_node,
+    text_to_textnodes,
+)
 
 
 class TestUtils(unittest.TestCase):
@@ -35,3 +42,32 @@ class TestUtils(unittest.TestCase):
             "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
         )
         self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
+
+    def test_split_nodes_image(self):
+        nodes = [
+            TextNode("This is a text node", TextType.NORMAL_TEXT),
+            TextNode("This is a text node", TextType.IMAGE),
+        ]
+        new_nodes = split_nodes_image(nodes)
+        self.assertEqual(new_nodes, [TextNode("This is a text node", TextType.IMAGE)])
+
+    def test_split_nodes_link(self):
+        nodes = [
+            TextNode("This is a text node", TextType.NORMAL_TEXT),
+            TextNode("This is a text node", TextType.LINK),
+        ]
+        new_nodes = split_nodes_link(nodes)
+        self.assertEqual(new_nodes, [TextNode("This is a text node", TextType.LINK)])
+
+    def test_text_to_textnodes(self):
+        text = "This is a text node with an ![image](https://i.imgur.com/zjjcJKZ.png) and a [link](https://www.google.com)"
+        nodes = text_to_textnodes(text)
+        self.assertEqual(
+            nodes,
+            [
+                TextNode("This is a text node with an image", TextType.NORMAL_TEXT),
+                TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+                TextNode("and a link", TextType.NORMAL_TEXT),
+                TextNode("link", TextType.LINK, "https://www.google.com"),
+            ],
+        )

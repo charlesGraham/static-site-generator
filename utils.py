@@ -52,3 +52,76 @@ def extract_markdown_links(text):
     pattern = r"\[([^\]]+)\]\(([^)]+)\)"
     matches = re.findall(pattern, text)
     return matches
+
+
+def split_nodes_image(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        if isinstance(node, TextNode) and node.text_type == TextType.IMAGE:
+            new_nodes.append(node)
+        else:
+            new_nodes.append(node)
+    return new_nodes
+
+
+def split_nodes_link(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        if isinstance(node, TextNode) and node.text_type == TextType.LINK:
+            new_nodes.append(node)
+        else:
+            new_nodes.append(node)
+    return new_nodes
+
+
+def text_to_textnodes(text):
+    images = extract_markdown_images(text)
+    links = extract_markdown_links(text)
+    placeholder_map = {}
+    temp_text = text
+
+    for i, (alt, url) in enumerate(images):
+        placeholder = f"__IMAGE_PLACEHOLDER_{i}__"
+        temp_text = temp_text.replace(f"![{alt}]({url})", placeholder, 1)
+        placeholder_map[placeholder] = ("IMAGE", alt, url)
+
+    for i, (label, url) in enumerate(links):
+        placeholder = f"__LINK_PLACEHOLDER_{i}__"
+        temp_text = temp_text.replace(f"[{label}]({url})", placeholder, 1)
+        placeholder_map[placeholder] = ("LINK", label, url)
+
+    combined_pattern = (
+        r"(__IMAGE_PLACEHOLDER_\d+__)"  # image placeholder
+        r"|(__LINK_PLACEHOLDER_\d+__)"  # link placeholder
+        r"|\*\*([^*]+)\*\*"  # bold
+        r"|_([^_]+)_"  # italic
+        r"|`([^`]+)`"  # code
+    )
+    nodes = []
+    pos = 0
+    for match in re.finditer(combined_pattern, temp_text):
+        start, end = match.span()
+
+        if start > pos:
+            normal_text = temp_text[pos:start]
+            if normal_text:
+                nodes.append(TextNode(normal_text, TextType.NORMAL_TEXT))
+        if match.group(1):  # image placeholder
+            _, alt, url = placeholder_map[match.group(1)]
+            nodes.append(TextNode(alt, TextType.IMAGE, url))
+        elif match.group(2):  # link placeholder
+            _, label, url = placeholder_map[match.group(2)]
+            nodes.append(TextNode(label, TextType.LINK, url))
+        elif match.group(3):  # bold
+            nodes.append(TextNode(match.group(3), TextType.BOLD_TEXT))
+        elif match.group(4):  # italic
+            nodes.append(TextNode(match.group(4), TextType.ITALIC_TEXT))
+        elif match.group(5):  # code
+            nodes.append(TextNode(match.group(5), TextType.CODE_TEXT))
+        pos = end
+
+    if pos < len(temp_text):
+        trailing_text = temp_text[pos:]
+        if trailing_text:
+            nodes.append(TextNode(trailing_text, TextType.NORMAL_TEXT))
+    return nodes
