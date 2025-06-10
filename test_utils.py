@@ -9,7 +9,12 @@ from utils import (
     text_node_to_html_node,
     text_to_textnodes,
     markdown_to_blocks,
+    BlockType,
+    block_to_block_type,
+    markdown_to_html_node,
 )
+from parentnode import ParentNode
+from leaf import Leaf
 
 
 class TestUtils(unittest.TestCase):
@@ -94,4 +99,60 @@ class TestUtils(unittest.TestCase):
                 "Paragraph",
                 "- List item",
             ],
+        )
+
+    def test_block_to_block_type(self):
+        self.assertEqual(block_to_block_type("# Heading 1"), BlockType.HEADING)
+        self.assertEqual(block_to_block_type("###### Heading 6"), BlockType.HEADING)
+        code = """```
+code here
+```"""
+        self.assertEqual(block_to_block_type(code), BlockType.CODE)
+        quote = "> this is a quote\n> another quote line"
+        self.assertEqual(block_to_block_type(quote), BlockType.QUOTE)
+        ul = "- item 1\n- item 2\n- item 3"
+        self.assertEqual(block_to_block_type(ul), BlockType.UNORDERED_LIST)
+        ol = "1. first\n2. second\n3. third"
+        self.assertEqual(block_to_block_type(ol), BlockType.ORDERED_LIST)
+        para = "This is just a normal paragraph.\nIt has multiple lines."
+        self.assertEqual(block_to_block_type(para), BlockType.PARAGRAPH)
+        self.assertEqual(block_to_block_type("#Not a heading"), BlockType.PARAGRAPH)
+        self.assertEqual(block_to_block_type("-item"), BlockType.PARAGRAPH)
+        self.assertEqual(block_to_block_type("1.first\n2.second"), BlockType.PARAGRAPH)
+
+    def test_markdown_to_html_node(self):
+        md = """# Heading\n\nThis is a paragraph."""
+        node = markdown_to_html_node(md)
+        self.assertEqual(
+            node.to_html(), "<div><h1>Heading</h1><p>This is a paragraph.</p></div>"
+        )
+        md = """- item 1\n- item 2\n- item 3"""
+        node = markdown_to_html_node(md)
+        self.assertEqual(
+            node.to_html(),
+            "<div><ul><li>item 1</li><li>item 2</li><li>item 3</li></ul></div>",
+        )
+        md = """1. first\n2. second\n3. third"""
+        node = markdown_to_html_node(md)
+        self.assertEqual(
+            node.to_html(),
+            "<div><ol><li>first</li><li>second</li><li>third</li></ol></div>",
+        )
+        md = """```
+code here
+```"""
+        node = markdown_to_html_node(md)
+        self.assertEqual(node.to_html(), "<div><pre>code here</pre></div>")
+        md = "> quoted\n> text"
+        node = markdown_to_html_node(md)
+        self.assertEqual(
+            node.to_html(), "<div><blockquote>quoted text</blockquote></div>"
+        )
+        md = """# Heading\n\nThis is a paragraph.\n\n- item 1\n- item 2\n\n```
+code here
+```\n\n> quoted\n> text"""
+        node = markdown_to_html_node(md)
+        self.assertEqual(
+            node.to_html(),
+            "<div><h1>Heading</h1><p>This is a paragraph.</p><ul><li>item 1</li><li>item 2</li></ul><pre>code here</pre><blockquote>quoted text</blockquote></div>",
         )
